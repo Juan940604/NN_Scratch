@@ -27,4 +27,4 @@ def split_data(mnist: tuple) ->  tuple:
     test_inputs = [np.reshape(x,(784,1)) for x in te_d[0]]
     test_data = list(zip(test_inputs, te_d[1]))
 
-    return (tuple(training_data,validation_data,test_data))
+    return (tuple([training_data,validation_data,test_data]))

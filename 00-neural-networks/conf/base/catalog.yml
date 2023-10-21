@@ -3,8 +3,16 @@
 # Documentation for this file format can be found in "The Data Catalog"
 # Link: https://docs.kedro.org/en/stable/data/data_catalog.html
 
+# Data Source
 mnist:
   type: pickle.PickleDataSet
   filepath: data/01_raw/mnist.pkl
+  load_args:
+    encoding: 'latin1'
+
+# Splitted data into Training, Validation, Test
+model_input_table:
+  type: pickle.PickleDataSet
+  filepath: data/03_primary/model_input_table.pkl
   load_args:
     encoding: 'latin1'
