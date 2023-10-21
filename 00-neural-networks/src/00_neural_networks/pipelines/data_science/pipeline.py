@@ -10,10 +10,5 @@ from .nodes import greet
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline([
 
-        node(
-            func=greet,    
-            inputs="model_input_table",
-            outputs=None ,     
-            name="gret",
-        ),
+
     ])
