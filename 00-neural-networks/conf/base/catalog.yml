@@ -6,3 +6,5 @@
 mnist:
   type: pickle.PickleDataSet
   filepath: data/01_raw/mnist.pkl
+  load_args:
+    encoding: 'latin1'
