@@ -1,5 +1,6 @@
 ## Main Libraries
 import numpy as np 
+import random
 import jason
 import sys
 from  .Cost_Functions import QuadraticCost, CrossEntropyCost, sigmoid, sigmoid_prime
@@ -64,6 +65,79 @@ class Network(object):
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w,a) + b)
         return a 
+    
+
+    
+    def backprop(self,x,y):
+        """
+        Return a tuple ``(nabla_b,nabla_w)`` representing the gradient for the cost function C_x corresponding to one single sample.
+        Input:
+            - x: The features for a single sample of the training data
+            - y: The target for a single sample of the training data
+        Output:
+            - nabla_b: It is a layer-by-layer lists of numpy arrays similar to self.b. It contains the derivatives of C_x with respect to the biases
+            - nabla_w: It is a layer-by-layer lists of numpy arrays similar to self.w. It contains the derivatives of C_x with respect to the biases
+        """
+        nabla_b = [np.zeros(b.shape) for b in self.biases]
+        nabla_w = [np.zeros(w.shape) for w in self.weights]
+        # feedforward
+        activation = x
+        activations = [x] # List to store all the activations, layer by layer
+        zs = [] # list to store all z vectors, layer by layer
+        # Forward step for each layer
+        for b,w in zip(self.biases, self.weights):
+            z = np.dot(w,activation) + b 
+            zs.append(z)
+            activation = sigmoid(z)
+            activations.append(activation)
+
+        # backward step
+        ## For the last layer L
+        delta = self.cost.delta(z=zs[-1],a=activations[-1],y=y)
+        nabla_b[-1] = delta
+        nabla_w[-1] = np.dot(delta, activations[-2].transpose)
+
+        for l in range(2,self.num_layers):
+            # l starts in 2
+            z = zs[-l]
+            sp = sigmoid_prime(z)
+            delta = np.dot(self.weights[-l+1].transpose,delta)*sp
+            nabla_b[-l] =  delta
+            nabla_w[-l] = np.dot(delta, activations[-l-1].transpose)
+        return(nabla_b, nabla_w)
+    
+
+    
+    def update_mini_batch(self, mini_batch,eta,lmbda, n, regularization):
+        """
+            Update the network's weights and biases by applying gradient descent using ``backpropagation`` to a single minibatch.
+            - minibatch: It is a list of tuples ``(x,y)``
+            - eta: It is the learning rate
+            - lmbda: It is the regularization parameter
+            - n: It is the total size of the training data set
+        """
+        nabla_b = [np.zeros(b.shape) for b in self.biases]
+        nabla_w = [np.zeros(w.shape) for w in self.weights]
+        
+        # This for loop calculates the sum of the derivatives of the cost function with respect to the interested parameters using the mini_batch training data
+        for x,y in mini_batch:
+            delta_nabla_b, delta_nabla_w = self.backprop(x,y)
+            nabla_b = [nb + dnb for nb,dnb in zip(nabla_b,delta_nabla_b)]
+            nabla_w = [nw + dnw for nw,dnw in zip(nabla_w,delta_nabla_w)]
+        if regularization == 'L2':
+            self.weights = [(1-eta*lmbda/n)*w - (eta/len(mini_batch))*nw for w, nw in zip(self.weights,nabla_w) ]
+        elif regularization == 'L1':
+            self.weights = [ w - (eta*lmbda/n)*np.sign(w) - (eta/len(mini_batch))*nw for w, nw in zip(self.weights,nabla_w) ]
+
+        self.biases = [b - (eta/len(mini_batch))*nb for b,nb in zip(self.biases, nabla_b)] 
+
+    def total_cost(self,data,lmbda, convert=False):
+        """
+        Return the total cost for the data set ``data``
+        """
+
+
+
 
     def SGD(self,
             training_data,
@@ -103,9 +177,18 @@ class Network(object):
         """
 
         if evaluation_data: n_data = len(evaluation_data)
-
         n = len(training_data)
-
+        evaluation_cost, evaluation_accuracy = [],[]
+        training_cost, training_accuracy = [],[]
+        for j in range(epochs):
+            random.shuffle(training_data)
+            mini_batches = [training_data[k:(k+mini_bathc_size)] for k in range(0,n,mini_bathc_size) ]
+            for mini_batch in mini_bathc_size:
+                self.update_mini_batch(mini_batch,eta, lmbda, len(training_data), regularization)
+            print("Epoch %s training complete" % j)
+            if monitor_training_cost:
+                cost = self.
+        
 
 
 
