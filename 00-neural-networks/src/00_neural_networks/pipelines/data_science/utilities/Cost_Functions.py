@@ -3,13 +3,25 @@ import numpy as np
 import random
 import sys
 
-### Define the wuadratic and cross entropy cost functions
+
+# Define sigmoid and sigmoid_prime function (derivative of sigmoid with respect to z)
+
+def sigmoid(z):
+    return 1.0/(1.0+np.exp(-z))
+
+
+def sigmoid_prime(z):
+    return sigmoid(z)*(1-sigmoid(z))
+
+### Define the quadratic and cross entropy cost functions
 
 class QuadraticCost(object):
 
     @staticmethod
     def fn(a,y):
-        """ Return the cost associated with an output ``a`` and desired output ``y``"""
+        """ Return the cost associated with an output ``a`` and desired output ``y``
+            ``a`` and ``y`` is an array with dimension 10 
+            """
         return (0.5*np.linalg.norm(a-y)**2)
     
     @staticmethod
