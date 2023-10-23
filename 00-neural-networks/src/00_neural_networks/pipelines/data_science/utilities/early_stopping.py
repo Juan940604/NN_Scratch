@@ -9,6 +9,9 @@ class early_stopping(object):
                  epsilon: float,
                  accuracy: list):
         
+         """  This function is used to validate whether the accuracies in each epoch convergence
+            """
+        
         if len(accuracy) <= n: 
             print(f'The first {n} epochs have not finished yet')
         elif len(accuracy) > n:
