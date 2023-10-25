@@ -209,7 +209,7 @@ class Network(object):
              
             All values are evaluated at the end of each training epoch
         """
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger('kedro')
         if evaluation_data: n_data = len(evaluation_data)
         n = len(training_data)
         evaluation_cost, evaluation_accuracy = [],[]
