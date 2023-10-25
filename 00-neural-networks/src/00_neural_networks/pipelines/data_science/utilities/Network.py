@@ -1,12 +1,24 @@
 ## Main Libraries
 import numpy as np 
 import random
-import jason
+import json
 import sys
-from  .Cost_Functions import QuadraticCost, CrossEntropyCost, sigmoid, sigmoid_prime
-from .early_stopping import early_stopping
+from  Cost_Functions import QuadraticCost, CrossEntropyCost, sigmoid, sigmoid_prime
+from early_stopping import early_stopping
+import logging
+
+
 
 ## Main Network Class
+
+def vectorized_result(j):
+    """ Return a 10-dimensional unit vector with a 1.0 in the jth position
+        and zeros elsewhere. This is used to convert a digit (0,...,9) into 
+        a corresponding desired output from the neural network
+    """
+    e = np.zeros((10,1))
+    e[j] = 1.0
+    return e
 
 class Network(object):
 
@@ -95,15 +107,15 @@ class Network(object):
         ## For the last layer L
         delta = self.cost.delta(z=zs[-1],a=activations[-1],y=y)
         nabla_b[-1] = delta
-        nabla_w[-1] = np.dot(delta, activations[-2].transpose)
+        nabla_w[-1] = np.dot(delta, activations[-2].transpose())
 
         for l in range(2,self.num_layers):
             # l starts in 2
             z = zs[-l]
             sp = sigmoid_prime(z)
-            delta = np.dot(self.weights[-l+1].transpose,delta)*sp
+            delta = np.dot(self.weights[-l+1].transpose(),delta)*sp
             nabla_b[-l] =  delta
-            nabla_w[-l] = np.dot(delta, activations[-l-1].transpose)
+            nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
         return(nabla_b, nabla_w)
     
 
@@ -134,15 +146,37 @@ class Network(object):
     def total_cost(self,data,lmbda, convert=False):
         """
         Return the total cost for the data set ``data``
+        - convert: It is a flag which is False if the data set is the training data and True if the data set is the validation or test data
+        - data : the data set either training or validation. List of tuples containing X and Y
+        - lmda : regularization parameter for L2 regularization
         """
-
-
-
+        cost = 0.0
+        for x,y in data:
+            a = self.feedforward(x)
+            if convert: y = vectorized_result(y)
+            cost += self.cost.fn(a,y)/len(data)
+        cost += 0.5*(lmbda/len(data))*sum(np.linalg.norm(self.weights)**2 for w in self.weigths)
+        return cost
+    
+    def accuracy(self,data, convert= False):
+        """
+        Return the number of inputs in ``data`` for which the neural network outputs the correct result. 
+        - The neural natwork's output is assumed to be the index of whichever neuron in the final layer has the highest activation
+        - convert: It is a flag which is True if the data set is the training data and False if the data set is the validation or test data.
+                   The need for this flag arises due to differences in the way the results ``y`` are represented in the different data sets.
+        - data : the data set either training or validation. List of tuples containing X and Y
+        """
+        if convert:
+            results = [(np.argmax(self.feedforward(x)), np.argmax(y)) for (x,y) in data ]
+        else:
+            results = [(np.argmax(self.feedforward(x)), y) for (x,y) in data ]
+        
+        return sum(int(x==y) for (x,y) in results)
 
     def SGD(self,
             training_data,
             epochs,
-            mini_bathc_size,
+            mini_batch_size,
             eta,
             regularization,
             lmbda = 0.0, 
@@ -175,21 +209,51 @@ class Network(object):
              
             All values are evaluated at the end of each training epoch
         """
-
+        logger = logging.getLogger(__name__)
         if evaluation_data: n_data = len(evaluation_data)
         n = len(training_data)
         evaluation_cost, evaluation_accuracy = [],[]
         training_cost, training_accuracy = [],[]
         for j in range(epochs):
             random.shuffle(training_data)
-            mini_batches = [training_data[k:(k+mini_bathc_size)] for k in range(0,n,mini_bathc_size) ]
-            for mini_batch in mini_bathc_size:
+            mini_batches = [training_data[k:(k+mini_batch_size)] for k in range(0,n,mini_batch_size) ]
+            for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch,eta, lmbda, len(training_data), regularization)
             print("Epoch %s training complete" % j)
             if monitor_training_cost:
-                cost = self.
+                cost = self.total_cost(training_data,lmbda)
+                training_cost.append(cost)
+                logger.info("Cost on training data: {}".format(cost))
+            if monitor_training_accuracy:
+                accuracy = self.accuracy(training_data,convert=True)
+                training_accuracy.append(accuracy)
+                logger.info("Accuracy on training data: {} / {}".format(accuracy, n))
+            if monitor_evaluation_cost:
+                cost = self.total_cost(evaluation_data,lmbda)
+                evaluation_cost.append(cost)
+                logger.info("Cost on evaluation data: {}".format(cost))
+            if monitor_evaluation_accuracy:
+                accuracy = self.accuracy(evaluation_data,convert=True)
+                evaluation_accuracy.append(accuracy)
+                logger.info("Accuracy on evaluation data: {} / {}".format(self.accuracy(evaluation_data), n_data))
+                # Early stopping
+                if self.early_stopping.stopping(nn,epsilon,list(np.array(evaluation_accuracy)/n_data)):
+                    break
         
-
+        return evaluation_cost,evaluation_accuracy,\
+                training_cost, training_accuracy
+            
+    def save(self,filename):
+        """ Save the neural network to the file ``filename``"""
+        data = {
+                "sizes" : self.sizes,
+                "weights" : [w.tolist() for w in self.weights],
+                "biases" : [b.tolist() for b in self.biases],
+                "cost": str(self.cost.__name__)
+             }
+        f = open(filename, "w")
+        json.dump(data,f)
+        f.close()
 
 
 

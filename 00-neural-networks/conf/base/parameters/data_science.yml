@@ -3,3 +3,16 @@
 #
 # Documentation for this file format can be found in "Parameters"
 # Link: https://docs.kedro.org/en/0.18.7/kedro_project_setup/configuration.html#parameters
+
+model_options:
+  sizes: 
+    - 784
+    - 15
+    - 10
+  cost: 'CrossEntropyCost'
+  epochs: 30
+  mini_batch_size: 10
+  eta: 0.5
+  monitor_evaluation_accuracy: True
+  regularization: 'L1'
+
