@@ -16,3 +16,11 @@ model_input_table:
   filepath: data/03_primary/model_input_table.pkl
   load_args:
     encoding: 'latin1'
+
+
+# Model registration
+#---------------- The regressor was used without modular pipelines ------------------------------#
+nn_trained: 
+  type: pickle.PickleDataSet
+  filepath: data/06_models/nn_trained.pickle
+  versioned: true
