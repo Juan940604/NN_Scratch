@@ -3,8 +3,10 @@ import numpy as np
 import random
 import json
 import sys
-from  Cost_Functions import QuadraticCost, CrossEntropyCost, sigmoid, sigmoid_prime
-from early_stopping import early_stopping
+
+# The point before each .py imported is very important
+from  .Cost_Functions import QuadraticCost, CrossEntropyCost, sigmoid, sigmoid_prime
+from .early_stopping import early_stopping
 import logging
 
 
