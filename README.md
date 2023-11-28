@@ -5,3 +5,4 @@
 - The plus of this repository is that all the scripts were organized according to kedro project's structure.
 - This repository's sole purpose is to provide a clear resource for gaining a understanding of neural networks built from scratch.  
 
+![image](https://github.com/Juan940604/NN_Scratch/assets/68929258/d1641136-0970-4272-96df-a93f003d3692)
