@@ -9,7 +9,7 @@ from .utilities import  Network
 
 def train_model(model_input_table: Tuple,params: Dict) -> Dict:
     training_data, validation_data, test_data = model_input_table
-
+    """This function train the model """
     # Hyperparameters
     # Layers and neurons
     sizes = params['sizes']
